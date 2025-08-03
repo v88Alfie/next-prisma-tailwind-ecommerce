@@ -3,10 +3,8 @@ import { Badge } from '@/components/ui/badge'
 import {
    Card,
    CardContent,
-   CardDescription,
    CardFooter,
    CardHeader,
-   CardTitle,
 } from '@/components/ui/card'
 import { ProductWithIncludes } from '@/types/prisma'
 import Image from 'next/image'
@@ -18,7 +16,7 @@ export const ProductGrid = ({
    products: ProductWithIncludes[]
 }) => {
    return (
-      <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 mb-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
          {products.map((product) => (
             <Product product={product} key={product.id} />
          ))}
@@ -28,7 +26,7 @@ export const ProductGrid = ({
 
 export const ProductSkeletonGrid = () => {
    return (
-      <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 mb-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
          {[...Array(12)].map(() => (
             <ProductSkeleton key={Math.random()} />
          ))}
@@ -42,7 +40,7 @@ export const Product = ({ product }: { product: ProductWithIncludes }) => {
          const price = product?.price - product?.discount
          const percentage = (product?.discount / product?.price) * 100
          return (
-            <div className="flex gap-2 items-center">
+            <div className="flex items-center gap-2">
                <Badge className="flex gap-4" variant="destructive">
                   <div className="line-through">${product?.price}</div>
                   <div>%{percentage.toFixed(2)}</div>
@@ -59,15 +57,22 @@ export const Product = ({ product }: { product: ProductWithIncludes }) => {
       <Link className="" href={`/products/${product.id}`}>
          <Card className="h-full">
             <CardHeader className="p-0">
-               <div className="relative h-60 w-full">
-                  <Image
-                     className="rounded-t-lg"
-                     src={product?.images[0]}
-                     alt="product image"
-                     fill
-                     sizes="(min-width: 1000px) 30vw, 50vw"
-                     style={{ objectFit: 'cover' }}
-                  />
+               <div className="relative w-full h-60">
+                  {
+                     product?.images.length ? 
+                        <Image
+                           className="rounded-t-lg"
+                           src={product?.images[0]}
+                           alt="product image"
+                           fill
+                           sizes="(min-width: 1000px) 30vw, 50vw"
+                           style={{ objectFit: 'cover' }}
+                        />
+                     :
+                        <div className="flex items-center justify-center w-full h-full text-sm text-gray-400">
+                           No Image
+                        </div>
+                  }
                </div>
             </CardHeader>
             <CardContent className="grid gap-1 p-4">
@@ -76,7 +81,7 @@ export const Product = ({ product }: { product: ProductWithIncludes }) => {
                </Badge>
 
                <h2 className="mt-2">{product.title}</h2>
-               <p className="text-xs text-neutral-500 text-justify">
+               <p className="text-xs text-justify text-neutral-500">
                   {product.description}
                </p>
             </CardContent>
@@ -95,9 +100,9 @@ export const Product = ({ product }: { product: ProductWithIncludes }) => {
 export function ProductSkeleton() {
    return (
       <Link href="#">
-         <div className="animate-pulse rounded-lg border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-800">
-            <div className="relative h-full w-full">
-               <div className="flex h-40 w-full items-center justify-center rounded bg-neutral-300 dark:bg-neutral-700 ">
+         <div className="bg-white border rounded-lg animate-pulse border-neutral-200 dark:border-neutral-700 dark:bg-neutral-800">
+            <div className="relative w-full h-full">
+               <div className="flex items-center justify-center w-full h-40 rounded bg-neutral-300 dark:bg-neutral-700 ">
                   <ImageSkeleton />
                </div>
             </div>
