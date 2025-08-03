@@ -15,6 +15,7 @@ export type ProductWithIncludes = Prisma.ProductGetPayload<{
    include: {
       brand: true
       categories: true
+      crossSellProducts: true
    }
 }>
 

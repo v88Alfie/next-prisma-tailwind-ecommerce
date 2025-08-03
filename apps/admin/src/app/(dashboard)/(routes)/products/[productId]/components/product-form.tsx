@@ -23,15 +23,17 @@ import {
    SelectValue,
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
+import prisma from '@/lib/prisma'
 import type { ProductWithIncludes } from '@/types/prisma'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Category } from '@prisma/client'
+import { Brand, Category, Product } from '@prisma/client'
 import { Trash } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'react-hot-toast'
 import * as z from 'zod'
+import { CrossSellSelector } from './cross-sell-selector'
 
 const formSchema = z.object({
    title: z.string().min(1),
@@ -40,8 +42,10 @@ const formSchema = z.object({
    discount: z.coerce.number().min(0),
    stock: z.coerce.number().min(0),
    categoryId: z.string().min(1),
+   brandName: z.string().min(1),
    isFeatured: z.boolean().default(false).optional(),
    isAvailable: z.boolean().default(false).optional(),
+   crossSellProductIds: z.array(z.string()).optional()
 })
 
 type ProductFormValues = z.infer<typeof formSchema>
@@ -49,11 +53,13 @@ type ProductFormValues = z.infer<typeof formSchema>
 interface ProductFormProps {
    initialData: ProductWithIncludes | null
    categories: Category[]
+   brands: Brand[]
 }
 
 export const ProductForm: React.FC<ProductFormProps> = ({
    initialData,
    categories,
+   brands
 }) => {
    const params = useParams()
    const router = useRouter()
@@ -71,6 +77,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
            ...initialData,
            price: parseFloat(String(initialData?.price.toFixed(2))),
            discount: parseFloat(String(initialData?.discount.toFixed(2))),
+           crossSellProductIds: initialData.crossSellProducts.map(p => p.id),
         }
       : {
            title: '---',
@@ -82,6 +89,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
            categoryId: '---',
            isFeatured: false,
            isAvailable: false,
+           crossSellProductIds: [],
         }
 
    const form = useForm<ProductFormValues>({
@@ -92,7 +100,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({
    const onSubmit = async (data: ProductFormValues) => {
       try {
          setLoading(true)
-
          if (initialData) {
             await fetch(`/api/products/${params.productId}`, {
                method: 'PATCH',
@@ -162,7 +169,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
          <Form {...form}>
             <form
                onSubmit={form.handleSubmit(onSubmit)}
-               className="space-y-8 w-full"
+               className="w-full space-y-8"
             >
                <FormField
                   control={form.control}
@@ -190,7 +197,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                      </FormItem>
                   )}
                />
-               <div className="md:grid md:grid-cols-3 gap-8">
+               <div className="gap-8 md:grid md:grid-cols-3">
                   <FormField
                      control={form.control}
                      name="title"
@@ -299,9 +306,44 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   />
                   <FormField
                      control={form.control}
+                     name="brandName"
+                     render={({ field }) => (
+                        <FormItem>
+                           <FormLabel>Brand</FormLabel>
+                           <Select
+                              disabled={loading}
+                              onValueChange={field.onChange}
+                              value={field.value}
+                              defaultValue={field.value}
+                           >
+                              <FormControl>
+                                 <SelectTrigger>
+                                    <SelectValue
+                                       defaultValue={field.value}
+                                       placeholder="Select a brand"
+                                    />
+                                 </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                 {brands.map((brand) => (
+                                    <SelectItem
+                                       key={brand.id}
+                                       value={brand.title}
+                                    >
+                                       {brand.title}
+                                    </SelectItem>
+                                 ))}
+                              </SelectContent>
+                           </Select>
+                           <FormMessage />
+                        </FormItem>
+                     )}
+                  />
+                  <FormField
+                     control={form.control}
                      name="isFeatured"
                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormItem className="flex flex-row items-start p-4 space-x-3 space-y-0 border rounded-md">
                            <FormControl>
                               <Checkbox
                                  checked={field.value}
@@ -321,7 +363,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                      control={form.control}
                      name="isAvailable"
                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormItem className="flex flex-row items-start p-4 space-x-3 space-y-0 border rounded-md">
                            <FormControl>
                               <Checkbox
                                  checked={field.value}
@@ -334,6 +376,18 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                                  This product will appear in the store.
                               </FormDescription>
                            </div>
+                        </FormItem>
+                     )}
+                  />
+                  <FormField
+                     control={form.control}
+                     name="crossSellProductIds"
+                     render={({ field }) => (
+                        <FormItem className="col-span-2">
+                           <FormLabel>Cross Sell Products</FormLabel>
+                           <FormControl>
+                              <CrossSellSelector value={field.value ?? []} onChange={field.onChange} preload={initialData?.crossSellProducts}/>
+                           </FormControl>
                         </FormItem>
                      )}
                   />

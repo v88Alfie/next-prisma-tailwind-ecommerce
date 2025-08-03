@@ -7,6 +7,7 @@ import { getCountInCart, getLocalCart } from '@/lib/cart'
 import { CartContextProvider, useCartContext } from '@/state/Cart'
 import { MinusIcon, PlusIcon, ShoppingBasketIcon, X } from 'lucide-react'
 import { useState } from 'react'
+import { toast } from 'react-hot-toast'
 
 export default function CartButton({ product }) {
    return (
@@ -81,6 +82,8 @@ export function ButtonComponent({ product }) {
                count: 1,
             })
 
+            toast.success(`${product.title} was added to your cart`)
+
             dispatchCart(localCart)
          }
 
@@ -137,6 +140,9 @@ export function ButtonComponent({ product }) {
          if (!authenticated && count === 1) {
             localCart.items.splice(index, 1)
 
+
+            toast(`${product.title} has been removed from your cart.`)
+
             dispatchCart(localCart)
          }
 
@@ -171,9 +177,9 @@ export function ButtonComponent({ product }) {
          <>
             <Button variant="outline" size="icon" onClick={onRemoveFromCart}>
                {count == 1 ? (
-                  <X className="h-4 w-4" />
+                  <X className="w-4 h-4" />
                ) : (
-                  <MinusIcon className="h-4 w-4" />
+                  <MinusIcon className="w-4 h-4" />
                )}
             </Button>
 
@@ -181,7 +187,7 @@ export function ButtonComponent({ product }) {
                {count}
             </Button>
             <Button variant="outline" size="icon" onClick={onAddToCart}>
-               <PlusIcon className="h-4 w-4" />
+               <PlusIcon className="w-4 h-4" />
             </Button>
          </>
       )

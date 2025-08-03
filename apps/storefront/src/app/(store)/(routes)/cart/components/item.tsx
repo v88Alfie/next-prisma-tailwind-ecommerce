@@ -27,13 +27,13 @@ export const Item = ({ cartItem }) => {
    const { product, productId, count } = cartItem
 
    function findLocalCartIndexById(array, productId) {
-      for (let i = 0; i < array.length; i++) {
-         if (array?.items[i]?.productId === productId) {
-            return i
-         }
+      for (let i = 0; i < array.items.length; i++) {
+        if (array.items[i]?.productId === productId) {
+          return i;
+        }
       }
-      return -1
-   }
+      return -1;
+    }
 
    async function getProduct() {
       try {
@@ -210,7 +210,7 @@ export const Item = ({ cartItem }) => {
          const price = product?.price - product?.discount
          const percentage = (product?.discount / product?.price) * 100
          return (
-            <div className="flex gap-2 items-center">
+            <div className="flex items-center gap-2">
                <Badge className="flex gap-4" variant="destructive">
                   <div className="line-through">${product?.price}</div>
                   <div>%{percentage.toFixed(2)}</div>
@@ -225,36 +225,49 @@ export const Item = ({ cartItem }) => {
    return (
       <Card>
          <CardHeader className="p-0 md:hidden">
-            <div className="relative h-32 w-full">
+            <div className="relative w-full h-32">
                <Link href={`/products/${product?.id}`}>
-                  <Image
-                     className="rounded-t-lg"
-                     src={product?.images[0]}
-                     alt="product image"
-                     fill
-                     sizes="(min-width: 1000px) 30vw, 50vw"
-                     style={{ objectFit: 'cover' }}
-                  />
+               {
+                  product?.images.length ? 
+                     <Image
+                        className="rounded-t-lg"
+                        src={product?.images[0]}
+                        alt="product image"
+                        fill
+                        sizes="(min-width: 1000px) 30vw, 50vw"
+                        style={{ objectFit: 'cover' }}
+                     /> :
+                     <div className="flex items-center justify-center w-full h-full text-sm text-gray-400">
+                        No Image
+                     </div>
+               }
+                  
                </Link>
             </div>
          </CardHeader>
          <CardContent className="grid grid-cols-6 gap-4 p-3">
-            <div className="relative w-full col-span-2 hidden md:inline-flex">
+            <div className="relative hidden w-full col-span-2 md:inline-flex">
                <Link href={`/products/${product?.id}`}>
-                  <Image
-                     className="rounded-lg"
-                     src={product?.images[0]}
-                     alt="item image"
-                     fill
-                     style={{ objectFit: 'cover' }}
-                  />
+               {
+                  product?.images.length ? 
+                     <Image
+                        className="rounded-lg"
+                        src={product?.images[0]}
+                        alt="item image"
+                        fill
+                        style={{ objectFit: 'cover' }}
+                     /> :
+                     <div className="flex items-center justify-center w-full h-full text-sm text-gray-400">
+                        No Image
+                     </div>
+               }
                </Link>
             </div>
-            <div className="col-span-4 block space-y-2">
+            <div className="block col-span-4 space-y-2">
                <Link href={`/products/${product?.id}`}>
                   <h2>{product?.title}</h2>
                </Link>
-               <p className="text-xs text-muted-foreground text-justify">
+               <p className="text-xs text-justify text-muted-foreground">
                   {product?.description}
                </p>
                <Price />

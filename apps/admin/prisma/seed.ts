@@ -262,6 +262,24 @@ async function main() {
          createdProducts.push(createdProduct)
       }
 
+      // Add cross-sell relationships
+      for (const product of createdProducts) {
+         // Pick 1-3 other products to cross-sell (excluding self and available)
+         const crossSellCandidates = createdProducts.filter(p => p.id !== product.id && p.isAvailable)
+         const randomCrossSells = crossSellCandidates
+            .sort(() => 0.5 - Math.random())
+            .slice(0, getRandomIntInRange(1, 3))
+
+         await prisma.product.update({
+            where: { id: product.id },
+            data: {
+               crossSellProducts: {
+                  connect: randomCrossSells.map(product => ({ id: product.id })),
+               },
+            },
+         })
+      }
+
       console.log('Created Products...')
    } catch (error) {
       console.error('Could not create products...')
