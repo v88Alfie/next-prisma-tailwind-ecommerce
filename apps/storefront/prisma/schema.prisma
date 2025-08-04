@@ -120,6 +120,9 @@ model Product {
 
   categories Category[]
 
+  crossSellProducts   Product[] @relation("CrossSell") // Prisma will handle the many-to-many join table automatically.
+  crossSellOf         Product[] @relation("CrossSell")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
